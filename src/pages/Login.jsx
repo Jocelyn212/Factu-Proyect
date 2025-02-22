@@ -75,7 +75,7 @@ function Login() {
 
   return (
     <div className="login-container text-center">
-      <h2 className="text-xl font-bold pb-6 mt-6"tex-lg>Login</h2>
+      <h2 className=" font-bold pb-6 mt-6 text-lg">Login</h2>
       <form onSubmit={handleLogin}>
         <input
           className="block mx-auto mb-4 border border-gray-300 p-4 rounded-xl"

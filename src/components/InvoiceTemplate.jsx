@@ -50,55 +50,114 @@ import React, { forwardRef } from 'react';
 
 const InvoiceTemplate = forwardRef(({ invoice }, ref) => {
   return (
-    <div ref={ref} className="w-[210mm] h-[297mm] p-[20mm] bg-white" style={{ boxSizing: 'border-box' }}>
+    <div ref={ref} style={{
+      width: '210mm',
+      height: '297mm', // Cambié minHeight a height para evitar página en blanco extra
+      padding: '10mm', // Reducido el padding para evitar espacios excesivos
+      margin: '0 auto',
+      backgroundColor: 'white',
+      boxSizing: 'border-box',
+      fontSize: '10pt', // Reducido el tamaño de la fuente para evitar que se vea demasiado grande
+    }}>
       {/* Cabecera */}
-      <div className="flex justify-between items-start mb-8">
-        <div>
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        marginBottom: '15px', // Reducido margen inferior
+      }}>
+        <div style={{ maxWidth: '240px' }}>
           <img 
             src="https://res.cloudinary.com/pruebaweb/image/upload/v1740180968/LogoEdu_toe1na.png" 
             alt="Company Logo" 
-            className="w-[240px] h-auto"
+            style={{ width: '100%', height: 'auto' }}
           />
         </div>
-        <div className="text-right">
-          <h2 className="text-xl font-bold mb-2">FACTURA</h2>
-          <p className="font-bold">Nº: {invoice.invoiceNumber}</p>
-          <p>Fecha: {new Date(invoice.createdAt).toLocaleDateString()}</p>
+        <div style={{ textAlign: 'right' }}>
+          <h5 style={{ margin: '0', fontSize: '12pt', fontWeight: 'bold' }}>
+            OBRES I SERVEIS MIG-MON 2022 S.C.P
+          </h5>
+          <p style={{ margin: '2px 0', fontSize: '10pt' }}>ARQUITECTE GAUDI 7 3º 2º</p>
+          <p style={{ margin: '2px 0', fontSize: '10pt' }}>SANT FRUITOS DE BAGES</p>
+          <p style={{ margin: '2px 0', fontSize: '10pt' }}>08272</p>
+          <p style={{ margin: '2px 0', fontSize: '10pt' }}>Email: info@yourcompany.com</p>
+          <p style={{ margin: '2px 0', fontSize: '10pt' }}>Phone: 34 625254144 - 653903600</p>
         </div>
       </div>
 
-      {/* Información de la empresa */}
-      <div className="mb-8">
-        <h5 className="font-bold">OBRES I SERVEIS MIG-MON 2022 S.C.P</h5>
-        <p>ARQUITECTE GAUDI 7 3º 2º</p>
-        <p>SANT FRUITOS DE BAGES</p>
-        <p>08272</p>
-        <p>Email: info@yourcompany.com</p>
-        <p>Phone: 34 625254144 - 653903600</p>
+      {/* Información de la factura */}
+      <div style={{ marginBottom: '15px' }}>
+        <table style={{ width: '100%' }}>
+          <tbody>
+            <tr>
+              <td style={{ padding: '4px 0', fontSize: '10pt' }}>
+                <strong>Factura Nº:</strong> {invoice.invoiceNumber}
+              </td>
+            </tr>
+            <tr>
+              <td style={{ padding: '4px 0', fontSize: '10pt' }}>
+                <strong>Fecha:</strong> {new Date(invoice.createdAt).toLocaleDateString()}
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
       {/* Información del cliente */}
-      <div className="mb-8">
-        <h3 className="font-bold mb-2">Cliente:</h3>
-        <p>{invoice.clientName}</p>
-        <p>{invoice.clientAddress}</p>
-        <p>NIF/CIF: {invoice.clientNIF}</p>
+      <div style={{ marginBottom: '20px' }}>
+        <h3 style={{ margin: '0 0 10px 0', fontSize: '12pt' }}>Datos del cliente:</h3>
+        <p style={{ margin: '2px 0', fontSize: '10pt' }}><strong>Cliente:</strong> {invoice.clientName}</p>
+        {invoice.clientAddress && (
+          <p style={{ margin: '2px 0', fontSize: '10pt' }}><strong>Dirección:</strong> {invoice.clientAddress}</p>
+        )}
+        {invoice.clientNIF && (
+          <p style={{ margin: '2px 0', fontSize: '10pt' }}><strong>NIF/CIF:</strong> {invoice.clientNIF}</p>
+        )}
       </div>
 
       {/* Tabla de servicios */}
-      <table className="w-full mb-8 border-collapse">
+      <table style={{
+        width: '100%',
+        borderCollapse: 'collapse',
+        marginBottom: '20px',
+      }}>
         <thead>
-          <tr className="bg-gray-100">
-            <th className="border border-gray-300 p-2 text-left">Descripción</th>
-            <th className="border border-gray-300 p-2 text-right w-[150px]">Importe</th>
+          <tr>
+            <th style={{
+              border: '1px solid black',
+              padding: '6px',
+              textAlign: 'left',
+              backgroundColor: '#f3f4f6',
+              fontSize: '10pt',
+            }}>Descripción</th>
+            <th style={{
+              border: '1px solid black',
+              padding: '6px',
+              textAlign: 'right',
+              width: '150px',
+              backgroundColor: '#f3f4f6',
+              fontSize: '10pt',
+            }}>Importe</th>
           </tr>
         </thead>
         <tbody>
           {invoice.services && invoice.services.map((service, index) => (
+            console.log('Amount:', service.amount) , 
             <tr key={index}>
-              <td className="border border-gray-300 p-2">{service.description}</td>
-              <td className="border border-gray-300 p-2 text-right">
-                {service.amount.toFixed(2)} €
+              <td style={{
+                border: '1px solid black',
+                padding: '6px',
+                fontSize: '10pt',
+              }}>{service.description}</td>
+              <td style={{
+                border: '1px solid black',
+                padding: '6px',
+                textAlign: 'right',
+                fontSize: '10pt',
+              }}>
+                {/* Verificación para asegurarnos de que el importe es un número válido */}
+                {typeof service.amount === 'number' && !isNaN(service.amount) 
+                  ? service.amount.toFixed(2) 
+                  : '0.00'} €
               </td>
             </tr>
           ))}
@@ -106,16 +165,39 @@ const InvoiceTemplate = forwardRef(({ invoice }, ref) => {
       </table>
 
       {/* Totales */}
-      <div className="w-[200px] ml-auto">
-        <div className="flex justify-between mb-2">
+      <div style={{
+        width: '200px',
+        marginLeft: 'auto'
+      }}>
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          margin: '4px 0',
+          padding: '4px 0',
+          fontSize: '10pt',
+        }}>
           <span>Subtotal:</span>
           <span>{invoice.totalAmount?.toFixed(2)} €</span>
         </div>
-        <div className="flex justify-between mb-2">
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          margin: '4px 0',
+          padding: '4px 0',
+          fontSize: '10pt',
+        }}>
           <span>IVA (21%):</span>
           <span>{invoice.vat?.toFixed(2)} €</span>
         </div>
-        <div className="flex justify-between font-bold">
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          margin: '4px 0',
+          padding: '4px 0',
+          borderTop: '2px solid black',
+          fontWeight: 'bold',
+          fontSize: '10pt',
+        }}>
           <span>Total:</span>
           <span>{invoice.total?.toFixed(2)} €</span>
         </div>
@@ -125,3 +207,5 @@ const InvoiceTemplate = forwardRef(({ invoice }, ref) => {
 });
 
 export default InvoiceTemplate;
+
+
