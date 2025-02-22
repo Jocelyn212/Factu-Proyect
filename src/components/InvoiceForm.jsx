@@ -1,53 +1,92 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "../firebase-config";
 
 function InvoiceForm({ addInvoice }) {
   const [clientName, setClientName] = useState("");
-  const [amount, setAmount] = useState("");
-  const [dueDate, setDueDate] = useState("");
+  const [services, setServices] = useState([{ description: "", amount: "" }]);
+  const [clients, setClients] = useState([]);
+
+  useEffect(() => {
+    const fetchClients = async () => {
+      const clientsCollection = collection(db, "clients");
+      const clientSnapshot = await getDocs(clientsCollection);
+      const clientList = clientSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      setClients(clientList);
+    };
+    fetchClients();
+  }, []);
+
+  const handleServiceChange = (index, field, value) => {
+    const newServices = [...services];
+    newServices[index][field] = value;
+    setServices(newServices);
+  };
+
+  const handleAddService = () => {
+    setServices([...services, { description: "", amount: "" }]);
+  };
+
+  const handleRemoveService = (index) => {
+    const newServices = services.filter((_, i) => i !== index);
+    setServices(newServices);
+  };
 
   const handleAddInvoice = (e) => {
     e.preventDefault();
+    const totalAmount = services.reduce((total, service) => total + parseFloat(service.amount || 0), 0);
+    const vat = totalAmount * 0.21;
+    const total = totalAmount + vat;
     const newInvoice = {
       clientName,
-      amount,
-      dueDate,
-      createdAt: new Date().toISOString(),
+      services,
+      totalAmount: totalAmount || 0,
+      vat,
+      total,
     };
     addInvoice(newInvoice);
     setClientName("");
-    setAmount("");
-    setDueDate("");
+    setServices([{ description: "", amount: "" }]);
   };
 
   return (
     <form onSubmit={handleAddInvoice} className="bg-white p-6 rounded shadow-md">
       <h2 className="text-2xl mb-4">Add Invoice</h2>
       <div>
-        <label>Client Name</label>
-        <input
-          type="text"
+        <label>Client</label>
+        <select
           value={clientName}
           onChange={(e) => setClientName(e.target.value)}
           className="border p-2 w-full"
-        />
+        >
+          <option value="">Select a client</option>
+          {clients.map(client => (
+            <option key={client.id} value={client.name}>{client.name}</option>
+          ))}
+        </select>
       </div>
-      <div>
-        <label>Amount</label>
-        <input
-          type="number"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          className="border p-2 w-full"
-        />
-      </div>
-      <div>
-        <label>Due Date</label>
-        <input
-          type="date"
-          value={dueDate}
-          onChange={(e) => setDueDate(e.target.value)}
-          className="border p-2 w-full"
-        />
+      <div className="mt-4">
+        <label>Services</label>
+        {services.map((service, index) => (
+          <div key={index} className="flex space-x-4 mb-4">
+            <input
+              type="text"
+              placeholder="Description"
+              value={service.description}
+              onChange={(e) => handleServiceChange(index, "description", e.target.value)}
+              className="border p-2 flex-1"
+            />
+            <input
+              type="number"
+              placeholder="Amount"
+              value={service.amount}
+              onChange={(e) => handleServiceChange(index, "amount", e.target.value)}
+              className="border p-2"
+            />
+            <button type="button" onClick={() => handleRemoveService(index)} className="bg-red-500 text-white p-2">Remove</button>
+          </div>
+        ))}
+        <button type="button" onClick={handleAddService} className="bg-green-500 text-white p-2">Add Service</button>
       </div>
       <button type="submit" className="bg-blue-500 text-white p-2 mt-4">
         Add Invoice

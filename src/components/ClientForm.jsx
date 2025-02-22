@@ -6,6 +6,7 @@ function ClientForm({ fetchClients }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [nif, setNif] = useState("");
 
   const handleAddClient = async (e) => {
     e.preventDefault();
@@ -14,10 +15,12 @@ function ClientForm({ fetchClients }) {
         name,
         email,
         phone,
+        nif
       });
       setName("");
       setEmail("");
       setPhone("");
+      setNif("");
       fetchClients();
     } catch (error) {
       console.error(error);
@@ -51,6 +54,15 @@ function ClientForm({ fetchClients }) {
           type="text"
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
+          className="border p-2 w-full"
+        />
+      </div>
+      <div>
+        <label>NIF</label>
+        <input
+          type="text"
+          value={nif}
+          onChange={(e) => setNif(e.target.value)}
           className="border p-2 w-full"
         />
       </div>
