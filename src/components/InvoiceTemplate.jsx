@@ -155,9 +155,7 @@ const InvoiceTemplate = forwardRef(({ invoice }, ref) => {
                 fontSize: '10pt',
               }}>
                 {/* Verificación para asegurarnos de que el importe es un número válido */}
-                {typeof service.amount === 'number' && !isNaN(service.amount) 
-                  ? service.amount.toFixed(2) 
-                  : '0.00'} €
+                { service.amount?.toFixed(2) } €
               </td>
             </tr>
           ))}
