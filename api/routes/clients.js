@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const Client = require('../../backend/models/Client');
+const Client = require('../models');
 const auth = require('../middleware/auth');
 
 // Obtener todos los clientes

@@ -1,6 +1,4 @@
 import { useState, useEffect } from "react";
-import { collection, getDocs } from "firebase/firestore";
-import { db } from "../firebase-config";
 
 function InvoiceForm({ addInvoice }) {
   const [clientName, setClientName] = useState("");

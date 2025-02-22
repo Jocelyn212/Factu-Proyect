@@ -31,8 +31,6 @@ function Navbar({ user }) {
 
 export default Navbar; */
 import { Link, useNavigate } from "react-router-dom";
-import { signOut } from "firebase/auth";
-import { auth } from "../firebase-config";
 import { FaHome, FaUserFriends, FaFileInvoiceDollar, FaSignOutAlt } from 'react-icons/fa';
 
 function Navbar({ user }) {
