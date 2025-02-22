@@ -1,3 +1,42 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+
+@import "tailwindcss";
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background-color: #282c34;
+  }
+  
+  .nav-link {
+    color: white;
+    text-decoration: none;
+    margin-right: 1rem;
+    display: flex;
+    align-items: center;
+  }
+  
+  .nav-link:hover {
+    text-decoration: underline;
+  }
+  
+  .nav-link svg {
+    margin-right: 0.5rem;
+  }
+  
+  .logout-button {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+  }
+  
+  .logout-button svg {
+    margin-right: 0.5rem;
+  }
+  
+  .logout-button:hover {
+    text-decoration: underline;
+  }

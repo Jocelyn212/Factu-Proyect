@@ -1,4 +1,4 @@
-import React, { forwardRef } from "react";
+/* import React, { forwardRef } from "react";
 
 const InvoiceTemplate = forwardRef(({ invoice }, ref) => {
   return (
@@ -40,6 +40,27 @@ const InvoiceTemplate = forwardRef(({ invoice }, ref) => {
         <p><strong>IVA (21%):</strong> {invoice.vat.toFixed(2)} €</p>
         <p><strong>Total:</strong> {invoice.total.toFixed(2)} €</p>
       </div>
+    </div>
+  );
+});
+
+export default InvoiceTemplate; */
+import React, { forwardRef } from 'react';
+
+const InvoiceTemplate = forwardRef(({ invoice }, ref) => {
+  return (
+    <div ref={ref} className="p-6">
+      <h2 className="text-2xl mb-4">Factura #{invoice.invoiceNumber}</h2>
+      <div>
+        <strong>Cliente:</strong> {invoice.clientName}
+      </div>
+      <div>
+        <strong>Fecha:</strong> {new Date(invoice.createdAt).toLocaleDateString()}
+      </div>
+      <div>
+        <strong>Total:</strong> ${invoice.total}
+      </div>
+      {/* Aquí se pueden agregar más detalles de la factura según sea necesario */}
     </div>
   );
 });
