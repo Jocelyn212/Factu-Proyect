@@ -52,7 +52,7 @@ function InvoicePage() {
 
 export default InvoicePage; */
 // ... (resto del código)
-import React, { useEffect, useRef, useState } from 'react';
+/* import React, { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase-config';
@@ -176,7 +176,7 @@ function InvoicePage() {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      {/* Barra superior con botones */}
+     
       <div className="bg-white shadow-md p-4 fixed top-0 w-full z-10">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <button
@@ -194,12 +194,64 @@ function InvoicePage() {
         </div>
       </div>
 
-      {/* Contenido principal */}
       <div className="pt-20 pb-8 px-4">
         <div className="max-w-[210mm] mx-auto bg-white shadow-lg">
           <InvoiceTemplate ref={invoiceTemplateRef} invoice={invoice} />
         </div>
       </div>
+    </div>
+  );
+}
+
+export default InvoicePage; */
+
+import React, { useEffect, useRef, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import InvoiceTemplate from '../components/InvoiceTemplate';
+import { jsPDF } from 'jspdf';
+
+function InvoicePage() {
+  const { id } = useParams();
+  const [invoice, setInvoice] = useState(null);
+  const invoiceTemplateRef = useRef();
+
+  useEffect(() => {
+    const fetchInvoice = async () => {
+      const response = await fetch(`/api/invoices/${id}`);
+      const data = await response.json();
+      setInvoice(data);
+    };
+    fetchInvoice();
+  }, [id]);
+
+  const handleDownloadPDF = () => {
+    const doc = new jsPDF({
+      format: 'a4',
+      unit: 'mm',
+    });
+    doc.html(invoiceTemplateRef.current, {
+      callback: function (pdf) {
+        pdf.save(`invoice_${invoice.invoiceNumber}.pdf`);
+      },
+      x: 10,
+      y: 10,
+      width: 190, // width in mm
+      windowWidth: 800, // window width in pixels
+    });
+  };
+
+  return (
+    <div className="min-h-screen p-6">
+      {invoice ? (
+        <>
+          <InvoiceTemplate ref={invoiceTemplateRef} invoice={invoice} />
+          <button onClick={handleDownloadPDF} className="bg-green-600 text-white p-2 mt-4 rounded">
+            Descargar PDF
+          </button>
+        </>
+      ) : (
+        <p>Cargando factura...</p>
+      )}
     </div>
   );
 }

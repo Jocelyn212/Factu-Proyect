@@ -331,7 +331,7 @@ function Invoices() {
 }
 
 export default Invoices; */
-import React, { useEffect, useRef, useState } from 'react';
+/* import React, { useEffect, useRef, useState } from 'react';
 import { collection, doc, getDocs, query, where, runTransaction } from 'firebase/firestore';
 import { db } from '../firebase-config';
 import { useNavigate } from 'react-router-dom';
@@ -450,10 +450,7 @@ function Invoices() {
     <div className="min-h-screen p-6">
       <h1 className="text-3xl mb-4">Facturas</h1>
       
-      {/* Formulario para crear nueva factura */}
-      <InvoiceForm addInvoice={addInvoice} />
-
-      {/* Formulario de búsqueda */}
+  /*     <InvoiceForm addInvoice={addInvoice} />
       <form onSubmit={handleSearch} className="mb-4">
         <div className="flex space-x-4">
           <input
@@ -477,14 +474,10 @@ function Invoices() {
           </button>
         </div>
       </form>
-
-      {/* Lista de facturas */}
       <InvoiceList 
         invoices={invoices} 
         onSelectInvoice={handleSelectInvoice} 
       />
-
-      {/* Template de factura (oculto, usado para generar PDF) */}
       <div style={{ display: 'none' }}>
         {selectedInvoice && (
           <InvoiceTemplate 
@@ -493,6 +486,109 @@ function Invoices() {
           />
         )}
       </div>
+    </div>
+  );
+}
+
+export default Invoices; */ 
+
+import { useState, useEffect, useRef } from "react";
+import InvoiceForm from "../components/InvoiceForm";
+import InvoiceList from "../components/InvoiceList";
+import InvoiceTemplate from "../components/InvoiceTemplate";
+import { jsPDF } from "jspdf";
+
+function Invoices() {
+  const [invoices, setInvoices] = useState([]);
+  const [selectedInvoice, setSelectedInvoice] = useState(null);
+  const invoiceTemplateRef = useRef();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [month, setMonth] = useState("");
+
+  const fetchInvoices = async (clientName = "", month = "") => {
+    let query = "/api/invoices";
+    if (clientName || month) {
+      query += "?";
+      if (clientName) {
+        query += `clientName=${clientName}&`;
+      }
+      if (month) {
+        query += `month=${month}&`;
+      }
+    }
+
+    const response = await fetch(query);
+    const data = await response.json();
+    setInvoices(data);
+  };
+
+  useEffect(() => {
+    fetchInvoices();
+  }, []);
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    fetchInvoices(searchTerm, month);
+  };
+
+  const addInvoice = async (invoice) => {
+    const response = await fetch("/api/invoices", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(invoice),
+    });
+    if (response.ok) {
+      fetchInvoices();
+    }
+  };
+
+  const handleDownloadPDF = () => {
+    const doc = new jsPDF({
+      format: "a4",
+      unit: "mm",
+    });
+    doc.html(invoiceTemplateRef.current, {
+      callback: function (pdf) {
+        pdf.save(`invoice_${selectedInvoice.invoiceNumber}.pdf`);
+      },
+      x: 10,
+      y: 10,
+      width: 190, // width in mm
+      windowWidth: 800, // window width in pixels
+    });
+  };
+
+  const handleSelectInvoice = (invoice) => {
+    setSelectedInvoice(invoice);
+    window.open(`/invoice/${invoice._id}`, "_blank");
+  };
+
+  return (
+    <div className="min-h-screen p-6">
+      <h1 className="text-3xl mb-4">Facturas</h1>
+      <InvoiceForm addInvoice={addInvoice} />
+
+      <form onSubmit={handleSearch} className="mb-4">
+        <div className="flex space-x-4">
+          <input
+            type="text"
+            placeholder="Busca por cliente"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="border p-2 flex-1"
+          />
+          <input
+            type="month"
+            value={month}
+            onChange={(e) => setMonth(e.target.value)}
+            className="border p-2"
+          />
+          <button type="submit" className="bg-gray-400 text-white p-2 px-4 rounded">
+            Buscar
+          </button>
+        </div>
+      </form>
+      <InvoiceList invoices={invoices} onSelectInvoice={handleSelectInvoice} />
     </div>
   );
 }

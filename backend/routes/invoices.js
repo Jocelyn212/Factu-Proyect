@@ -1,9 +1,10 @@
-/* const express = require('express');
+const express = require('express');
 const router = express.Router();
-const Invoice = require('../models/Invoice');
+const Invoice = require('../../backend/models/Invoice');
+const auth = require('../middleware/auth');
 
 // Obtener todas las facturas
-router.get('/', async (req, res) => {
+router.get('/', auth, async (req, res) => {
   try {
     const invoices = await Invoice.find();
     res.json(invoices);
@@ -13,7 +14,7 @@ router.get('/', async (req, res) => {
 });
 
 // Crear una nueva factura
-router.post('/', async (req, res) => {
+router.post('/', auth, async (req, res) => {
   const invoice = new Invoice({
     clientName: req.body.clientName,
     clientAddress: req.body.clientAddress,
@@ -35,7 +36,7 @@ router.post('/', async (req, res) => {
 });
 
 // Obtener una factura por ID
-router.get('/:id', async (req, res) => {
+router.get('/:id', auth, async (req, res) => {
   try {
     const invoice = await Invoice.findById(req.params.id);
     if (invoice == null) {
@@ -47,22 +48,4 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-module.exports = router; */
-require('dotenv').config();
-const express = require('express');
-const connectDB = require('./mongo-config');
-const invoicesRouter = require('./routes/invoices');
-const usersRouter = require('./routes/users');
-
-const app = express();
-const PORT = process.env.PORT || 5000;
-
-connectDB();
-
-app.use(express.json());
-app.use('/api/invoices', invoicesRouter);
-app.use('/api/users', usersRouter);
-
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+module.exports = router;
