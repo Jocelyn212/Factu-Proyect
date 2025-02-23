@@ -5,12 +5,16 @@ function InvoiceForm({ addInvoice }) {
   const [services, setServices] = useState([{ description: "", amount: "" }]);
   const [clients, setClients] = useState([]);
 
+  // Cargar los clientes desde la API
   useEffect(() => {
     const fetchClients = async () => {
-      const clientsCollection = collection(db, "clients");
-      const clientSnapshot = await getDocs(clientsCollection);
-      const clientList = clientSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setClients(clientList);
+      try {
+        const response = await fetch("http://localhost:3000/api/invoices");
+        const data = await response.json();
+        setClients(data);
+      } catch (error) {
+        console.error("Error al cargar los clientes:", error);
+      }
     };
     fetchClients();
   }, []);
@@ -59,7 +63,7 @@ function InvoiceForm({ addInvoice }) {
         >
           <option value="">Select a client</option>
           {clients.map(client => (
-            <option key={client.id} value={client.name}>{client.name}</option>
+            <option key={client._id} value={client.name}>{client.name}</option>
           ))}
         </select>
       </div>
