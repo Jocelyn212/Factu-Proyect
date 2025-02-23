@@ -1,33 +1,3 @@
-/* import { useState, useEffect } from "react";
-import { collection, getDocs } from "firebase/firestore";
-import { db } from "../firebase-config";
-import ClientForm from "../components/ClientForm";
-import ClientList from "../components/ClientList";
-
-function Clients() {
-  const [clients, setClients] = useState([]);
-
-  const fetchClients = async () => {
-    const clientsCollection = collection(db, "clients");
-    const clientSnapshot = await getDocs(clientsCollection);
-    const clientList = clientSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    setClients(clientList);
-  };
-
-  useEffect(() => {
-    fetchClients();
-  }, []);
-
-  return (
-    <div className="min-h-screen p-6">
-      <h1 className="text-3xl mb-4">Clients</h1>
-      <ClientForm fetchClients={fetchClients} />
-      <ClientList clients={clients} />
-    </div>
-  );
-}
-
-export default Clients; */
 import { useState, useEffect } from "react";
 
 function Clients() {
@@ -39,9 +9,16 @@ function Clients() {
   const [clientPhone, setClientPhone] = useState("");
 
   const fetchClients = async () => {
-    const response = await fetch("/api/clients");
-    const data = await response.json();
-    setClients(data);
+    try {
+      const response = await fetch("http://localhost:3000/api/clients"); // Asegúrate de usar el puerto correcto
+      if (!response.ok) {
+        throw new Error('No se pudieron cargar los clientes');
+      }
+      const data = await response.json();
+      setClients(data);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   useEffect(() => {
@@ -57,7 +34,7 @@ function Clients() {
       email: clientEmail,
       phone: clientPhone,
     };
-    const response = await fetch("/api/clients", {
+    const response = await fetch("http://localhost:3000/api/clients", { // Usa el puerto adecuado
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(client),
@@ -69,6 +46,9 @@ function Clients() {
       setClientNIF("");
       setClientEmail("");
       setClientPhone("");
+    } else {
+      const errorData = await response.json();
+      console.error(errorData.message || "Error al agregar cliente");
     }
   };
 
@@ -139,3 +119,6 @@ function Clients() {
 }
 
 export default Clients;
+
+
+

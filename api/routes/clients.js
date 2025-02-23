@@ -1,6 +1,8 @@
 const express = require('express');
-const router = express.Router();
+const { check, validationResult } = require('express-validator');
 const Client = require('../models/Client');
+
+const router = express.Router();
 
 // Obtener todos los clientes
 router.get('/', async (req, res) => {
@@ -8,71 +10,40 @@ router.get('/', async (req, res) => {
     const clients = await Client.find();
     res.json(clients);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ success: false, message: 'Error en el servidor' });
   }
 });
 
 // Crear un nuevo cliente
-router.post('/', async (req, res) => {
-  const client = new Client({
-    name: req.body.name,
-    nif: req.body.nif,
-    address: req.body.address,
-    email: req.body.email,
-    phone: req.body.phone
-  });
-
-  try {
-    const newClient = await client.save();
-    res.status(201).json(newClient);
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
-});
-
-// Obtener un cliente específico
-router.get('/:id', async (req, res) => {
-  try {
-    const client = await Client.findById(req.params.id);
-    if (client) {
-      res.json(client);
-    } else {
-      res.status(404).json({ message: 'Cliente no encontrado' });
+router.post(
+  '/',
+  [
+    check('name', 'El nombre es obligatorio').not().isEmpty(),
+    check('email', 'Ingrese un email válido').isEmail(),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, errors: errors.array() });
     }
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
 
-// Actualizar un cliente
-router.put('/:id', async (req, res) => {
-  try {
-    const client = await Client.findById(req.params.id);
-    if (client) {
-      Object.assign(client, req.body);
-      const updatedClient = await client.save();
-      res.json(updatedClient);
-    } else {
-      res.status(404).json({ message: 'Cliente no encontrado' });
-    }
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
-});
+    const { name, address, nif, email, phone } = req.body;
 
-// Eliminar un cliente
-router.delete('/:id', async (req, res) => {
-  try {
-    const client = await Client.findById(req.params.id);
-    if (client) {
-      await client.remove();
-      res.json({ message: 'Cliente eliminado' });
-    } else {
-      res.status(404).json({ message: 'Cliente no encontrado' });
+    try {
+      let client = await Client.findOne({ email });
+      if (client) {
+        return res.status(400).json({ success: false, message: 'El cliente ya existe' });
+      }
+
+      client = new Client({ name, address, nif, email, phone });
+      await client.save();
+
+      res.status(201).json({ success: true, message: 'Cliente añadido', client });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ success: false, message: 'Error en el servidor' });
     }
-  } catch (error) {
-    res.status(500).json({ message: error.message });
   }
-});
+);
 
 module.exports = router;
