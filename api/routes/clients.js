@@ -5,7 +5,7 @@ const Client = require('../models/Client');
 const router = express.Router();
 
 // Obtener todos los clientes
-router.get('/', async (req, res) => {
+router.get('/clients', async (req, res) => {
   try {
     const clients = await Client.find();
     res.json(clients);

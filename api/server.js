@@ -23,9 +23,11 @@ mongoose.connect(process.env.MONGO_URI, {
 // Rutas
 const userRoutes = require('./routes/users'); // Importa las rutas de usuarios
 const clientRoutes = require('./routes/clients');
+const invoiceRoutes = require('./routes/invoices');
 
 app.use('/api/users', userRoutes); // Usa las rutas
 app.use('/api/clients', clientRoutes);
+app.use('/api/invoices', invoiceRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Servidor corriendo en el puerto ${PORT}`));

@@ -1,18 +1,25 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 
-function Clients() {
+const Clients = () => {
   const [clients, setClients] = useState([]);
   const [clientName, setClientName] = useState("");
   const [clientAddress, setClientAddress] = useState("");
   const [clientNIF, setClientNIF] = useState("");
   const [clientEmail, setClientEmail] = useState("");
   const [clientPhone, setClientPhone] = useState("");
+  const [message, setMessage] = useState("");
 
   const fetchClients = async () => {
     try {
-      const response = await fetch("http://localhost:3000/api/clients"); // Asegúrate de usar el puerto correcto
+      const token = localStorage.getItem("token");
+      const response = await fetch("http://localhost:3000/api/clients", {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+        },
+      });
+
       if (!response.ok) {
-        throw new Error('No se pudieron cargar los clientes');
+        throw new Error("No se pudieron cargar los clientes");
       }
       const data = await response.json();
       setClients(data);
@@ -27,6 +34,13 @@ function Clients() {
 
   const addClient = async (e) => {
     e.preventDefault();
+    setMessage("");
+
+    if (!clientName || !clientEmail) {
+      setMessage("El nombre y el correo son obligatorios.");
+      return;
+    }
+
     const client = {
       name: clientName,
       address: clientAddress,
@@ -34,30 +48,44 @@ function Clients() {
       email: clientEmail,
       phone: clientPhone,
     };
-    const response = await fetch("http://localhost:3000/api/clients", { // Usa el puerto adecuado
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(client),
-    });
-    if (response.ok) {
+
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch("http://localhost:3000/api/clients", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify(client),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Error al agregar cliente");
+      }
+
       fetchClients();
       setClientName("");
       setClientAddress("");
       setClientNIF("");
       setClientEmail("");
       setClientPhone("");
-    } else {
-      const errorData = await response.json();
-      console.error(errorData.message || "Error al agregar cliente");
+      setMessage("Cliente agregado con éxito.");
+    } catch (error) {
+      setMessage(error.message);
     }
   };
 
   return (
     <div className="min-h-screen p-6">
       <h1 className="text-3xl mb-4">Clientes</h1>
+      
+      {message && <div className="bg-blue-200 text-blue-800 p-2 mb-4">{message}</div>}
+
       <form onSubmit={addClient} className="mb-4">
         <div className="mb-4">
-          <label className="block text-gray-700">Nombre</label>
+          <label className="block text-gray-700">Nombre *</label>
           <input
             type="text"
             value={clientName}
@@ -85,12 +113,13 @@ function Clients() {
           />
         </div>
         <div className="mb-4">
-          <label className="block text-gray-700">Email</label>
+          <label className="block text-gray-700">Email *</label>
           <input
             type="email"
             value={clientEmail}
             onChange={(e) => setClientEmail(e.target.value)}
             className="border p-2 w-full"
+            required
           />
         </div>
         <div className="mb-4">
@@ -106,6 +135,7 @@ function Clients() {
           Añadir Cliente
         </button>
       </form>
+
       <h2 className="text-2xl mb-4">Lista de Clientes</h2>
       <ul>
         {clients.map(client => (
@@ -119,6 +149,7 @@ function Clients() {
 }
 
 export default Clients;
+
 
 
 
