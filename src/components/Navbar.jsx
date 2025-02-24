@@ -50,7 +50,7 @@ function Navbar({ user }) {
       <div className="navbar">
         <Link to="/dashboard" className="text-white flex items-center"><FaHome className="mr-1" /> Dashboard</Link>
         <Link to="/clients" className="text-white flex items-center"><FaUserFriends className="mr-1" /> Clients</Link>
-        <Link to="/invoices" className="text-white flex items-center"><FaFileInvoiceDollar className="mr-1" /> Invoices</Link>
+        {/* <Link to="/invoices" className="text-white flex items-center"><FaFileInvoiceDollar className="mr-1" /> Invoices</Link> */}
       </div>
       {user && (
         <button onClick={handleLogout} className="text-white flex items-center">
