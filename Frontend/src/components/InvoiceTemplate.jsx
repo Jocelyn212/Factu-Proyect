@@ -46,7 +46,7 @@ const InvoiceTemplate = forwardRef(({ invoice }, ref) => {
 
 export default InvoiceTemplate;
  */
-import React, { forwardRef } from 'react';
+/* import React, { forwardRef } from 'react';
 
 const InvoiceTemplate = forwardRef(({ invoice }, ref) => {
   return (
@@ -59,7 +59,7 @@ const InvoiceTemplate = forwardRef(({ invoice }, ref) => {
       boxSizing: 'border-box',
       fontSize: '10pt', // Reducido el tamaño de la fuente para evitar que se vea demasiado grande
     }}>
-      {/* Cabecera */}
+      
       <div style={{
         display: 'flex',
         justifyContent: 'space-between',
@@ -84,7 +84,7 @@ const InvoiceTemplate = forwardRef(({ invoice }, ref) => {
         </div>
       </div>
 
-      {/* Información de la factura */}
+     
       <div style={{ marginBottom: '15px' }}>
         <table style={{ width: '100%' }}>
           <tbody>
@@ -102,7 +102,7 @@ const InvoiceTemplate = forwardRef(({ invoice }, ref) => {
         </table>
       </div>
 
-      {/* Información del cliente */}
+     
       <div style={{ marginBottom: '20px' }}>
         <h3 style={{ margin: '0 0 10px 0', fontSize: '12pt' }}>Datos del cliente:</h3>
         <p style={{ margin: '2px 0', fontSize: '10pt' }}><strong>Cliente:</strong> {invoice.clientName}</p>
@@ -114,7 +114,7 @@ const InvoiceTemplate = forwardRef(({ invoice }, ref) => {
         )}
       </div>
 
-      {/* Tabla de servicios */}
+      
       <table style={{
         width: '100%',
         borderCollapse: 'collapse',
@@ -154,7 +154,7 @@ const InvoiceTemplate = forwardRef(({ invoice }, ref) => {
                 textAlign: 'right',
                 fontSize: '10pt',
               }}>
-                {/* Verificación para asegurarnos de que el importe es un número válido */}
+               
                 { service.amount?.toFixed(2) } €
               </td>
             </tr>
@@ -162,7 +162,7 @@ const InvoiceTemplate = forwardRef(({ invoice }, ref) => {
         </tbody>
       </table>
 
-      {/* Totales */}
+     
       <div style={{
         width: '200px',
         marginLeft: 'auto'
@@ -204,6 +204,63 @@ const InvoiceTemplate = forwardRef(({ invoice }, ref) => {
   );
 });
 
+export default InvoiceTemplate; */
+import React, { forwardRef } from 'react';
+
+const InvoiceTemplate = forwardRef(({ invoice }, ref) => {
+  return (
+    <div ref={ref} className="w-[210mm] h-[297mm] p-[20mm] box-border text-[12pt] bg-white">
+      <div className="flex justify-between items-center mb-4">
+        <div className="max-w-[240px]">
+          <img 
+            src="https://res.cloudinary.com/pruebaweb/image/upload/v1740180968/LogoEdu_toe1na.png" 
+            alt="Company Logo" 
+            className="w-full h-auto"
+          />
+        </div>
+        <div className="text-right">
+          <h5 className="m-0 font-bold text-[12pt]">OBRES I SERVEIS MIG-MON 2022 S.C.P</h5>
+          <p className="m-0 text-[10pt]">ARQUITECTE GAUDI 7 3º 2º</p>
+          <p className="m-0 text-[10pt]">SANT FRUITOS DE BAGES</p>
+          <p className="m-0 text-[10pt]">08272</p>
+          <p className="m-0 text-[10pt]">Email: info@yourcompany.com</p>
+          <p className="m-0 text-[10pt]">Phone: 34 625254144 - 653903600</p>
+        </div>
+      </div>
+
+      <div className="mb-4">
+        <p><strong>Factura Nº:</strong> {invoice.invoiceNumber}</p>
+        <p><strong>Cliente:</strong> {invoice.clientName}</p>
+        <p><strong>Fecha:</strong> {new Date(invoice.createdAt).toLocaleDateString()}</p>
+      </div>
+
+      <table className="w-full mb-4 border-collapse">
+        <thead>
+          <tr>
+            <th className="border border-gray-900 p-2 text-left bg-gray-200">Descripción</th>
+            <th className="border border-gray-900 p-2 text-right bg-gray-200">Importe (€)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {invoice.services.map((service, index) => (
+            <tr key={index}>
+              <td className="border border-gray-900 p-2">{service.description}</td>
+              <td className="border border-gray-900 p-2 text-right">{service.amount.toFixed(2)} €</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <div className="text-right">
+        <p><strong>SubTotal:</strong> {invoice.totalAmount.toFixed(2)} €</p>
+        <p><strong>IVA (21%):</strong> {invoice.vat.toFixed(2)} €</p>
+        <p><strong>Total:</strong> {invoice.total.toFixed(2)} €</p>
+      </div>
+    </div>
+  );
+});
+
 export default InvoiceTemplate;
+
 
 

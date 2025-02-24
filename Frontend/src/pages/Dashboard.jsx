@@ -29,7 +29,7 @@ function Dashboard() {
   const cards = [
     { icon: <FaHome className="text-4xl mx-auto" />, name: "Dashboard", route: "/dashboard" },
     { icon: <FaUserFriends className="text-4xl mx-auto" />, name: "Clientes", route: "/clients" },
-    /* { icon: <FaFileInvoiceDollar className="text-4xl mx-auto" />, name: "Facturas", route: "/invoices" }, */
+    { icon: <FaFileInvoiceDollar className="text-4xl mx-auto" />, name: "Presupuestos", route: "/budgets" },
   ];
 
   const handleCardClick = (route) => {

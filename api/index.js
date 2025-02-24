@@ -57,9 +57,12 @@ app.get("/", (req, res) => {
 // Importar rutas
 const userRoutes = require("./routes/users");
 const clientRoutes = require("./routes/clients");
+const budgetRoutes = require('./routes/budgets');
+
 
 app.use("/api/users", userRoutes);
 app.use("/api/clients", clientRoutes);
+app.use('/api/budgets', budgetRoutes);
 
 // Puerto para desarrollo local
 const PORT = process.env.PORT || 3000;

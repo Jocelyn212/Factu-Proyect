@@ -8,6 +8,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Navbar from "./components/Navbar";
 import './index.css';
+import Budgets from "./pages/Budgets";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -29,8 +30,7 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/login" />} />
         <Route path="/clients" element={user ? <Clients /> : <Navigate to="/login" />} />
-       {/*  <Route path="/invoices" element={user ? <Invoices /> : <Navigate to="/login" />} />
-        <Route path="/invoice/:id" element={user ? <InvoicePage /> : <Navigate to="/login" />} /> */}
+        <Route path="/budgets" element={user ? <Budgets /> : <Navigate to="/login" />} />
       </Routes>
     </Router>
   );
