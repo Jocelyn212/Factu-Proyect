@@ -30,7 +30,7 @@ function Navbar({ user }) {
 }
 
 export default Navbar; */
-import { Link, useNavigate } from "react-router-dom";
+/* import { Link, useNavigate } from "react-router-dom";
 import { FaHome, FaUserFriends, FaFileInvoiceDollar, FaSignOutAlt } from 'react-icons/fa';
 
 function Navbar({ user }) {
@@ -49,13 +49,111 @@ function Navbar({ user }) {
     <nav>
       <div className="navbar">
         <Link to="/dashboard" className="text-white flex items-center"><FaHome className="mr-1" /> Dashboard</Link>
-        <Link to="/clients" className="text-white flex items-center"><FaUserFriends className="mr-1" /> Clients</Link>
-        {/* <Link to="/invoices" className="text-white flex items-center"><FaFileInvoiceDollar className="mr-1" /> Invoices</Link> */}
       </div>
       {user && (
         <button onClick={handleLogout} className="text-white flex items-center">
           <FaSignOutAlt className="mr-1" /> Logout
         </button>
+      )}
+    </nav>
+  );
+}
+
+export default Navbar; */
+/* import { Link, useNavigate } from "react-router-dom";
+import { FaHome, FaSignOutAlt } from 'react-icons/fa';
+import { useContext } from 'react';
+import { AuthContext } from '../context/AuthContext';
+
+function Navbar({ user }) {
+  const navigate = useNavigate();
+  const { logout } = useContext(AuthContext);
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+
+  return (
+    <nav className="bg-gray-800 p-4 text-white flex justify-between items-center">
+      <div className="flex items-center">
+        <Link to="/dashboard" className="text-white flex items-center mr-4">
+          <FaHome className="mr-1" /> Dashboard
+        </Link>
+      </div>
+      {user && (
+        <div className="flex items-center">
+          <span className="mr-4">Hola, {user.username}</span>
+          <button onClick={handleLogout} className="text-white flex items-center bg-red-500 p-2 rounded">
+            <FaSignOutAlt className="mr-1" /> Logout
+          </button>
+        </div>
+      )}
+    </nav>
+  );
+}
+
+export default Navbar; */
+/* import { Link, useNavigate } from "react-router-dom";
+import { FaHome, FaSignOutAlt } from 'react-icons/fa';
+import { useContext } from 'react';
+import { AuthContext } from '../context/AuthContext';
+
+function Navbar() {
+  const navigate = useNavigate();
+  const { isAuthenticated, logout } = useContext(AuthContext);
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+
+  return (
+    <nav className="bg-gray-800 p-4 text-white flex justify-between items-center">
+      <div className="flex items-center">
+        <Link to="/dashboard" className="text-white flex items-center mr-4">
+          <FaHome className="mr-1" /> Dashboard
+        </Link>
+      </div>
+      {isAuthenticated && (
+        <div className="flex items-center">
+          <button onClick={handleLogout} className="text-white flex items-center  p-2 rounded">
+            <FaSignOutAlt className="mr-1" /> Logout
+          </button>
+        </div>
+      )}
+    </nav>
+  );
+}
+
+export default Navbar; */
+import { Link, useNavigate } from "react-router-dom";
+import { FaHome, FaSignOutAlt } from 'react-icons/fa';
+import { useContext } from 'react';
+import { AuthContext } from '../context/AuthContext';
+
+function Navbar() {
+  const navigate = useNavigate();
+  const { isAuthenticated, logout } = useContext(AuthContext);
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+
+  return (
+    <nav className="bg-gray-800 p-4 text-white flex justify-between items-center">
+      <div className="flex items-center">
+        <Link to="/dashboard" className="text-white flex items-center mr-4">
+          <FaHome className="mr-1" /> Dashboard
+        </Link>
+      </div>
+      {isAuthenticated && (
+        <div className="flex items-center">
+          <button onClick={handleLogout} className="text-white flex items-center bg-red-500 p-2 rounded">
+            <FaSignOutAlt className="mr-1" /> Logout
+          </button>
+        </div>
       )}
     </nav>
   );
