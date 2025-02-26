@@ -13,7 +13,7 @@ const Clients = () => {
   const fetchClients = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`http://localhost:3000/api/clients`, {
+      const response = await fetch(`${API_URL}/clients`, {
         headers: {
           "Authorization": `Bearer ${token}`,
         },
