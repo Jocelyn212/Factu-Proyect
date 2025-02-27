@@ -47,6 +47,10 @@ import './index.css';
 import Budgets from "./pages/Budgets";
 import { AuthProvider } from './context/AuthContext';
 import PrivateRoute from './components/PrivateRoute';
+import InvoiceForm from "./components/InvoiceForm";
+/* import InvoiceList from "./components/InvoiceList"; */
+import InvoiceDetail from "./components/InvoiceDetail";
+import Invoices from "./pages/Invoice";
 
 function App() {
   return (
@@ -72,6 +76,13 @@ function App() {
             path="/budgets" 
             element={<PrivateRoute><Budgets /></PrivateRoute>} 
           />
+           <Route 
+            path="/invoices" 
+            element={<PrivateRoute><Invoices /></PrivateRoute>} 
+          />
+          <Route path="/invoices/new" element={<PrivateRoute><InvoiceForm /></PrivateRoute>} />
+          <Route path="/invoices/:id" element={<PrivateRoute><InvoiceDetail /></PrivateRoute>} />
+          
         </Routes>
       </Router>
     </AuthProvider>

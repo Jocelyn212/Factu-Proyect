@@ -58,11 +58,13 @@ app.get("/", (req, res) => {
 const userRoutes = require("./routes/users");
 const clientRoutes = require("./routes/clients");
 const budgetRoutes = require('./routes/budgets');
+const invoiceRoutes = require('./routes/invoices');
 
 
 app.use("/api/users", userRoutes);
 app.use("/api/clients", clientRoutes);
 app.use('/api/budgets', budgetRoutes);
+app.use('/api/invoices', invoiceRoutes);
 
 // Puerto para desarrollo local
 const PORT = process.env.PORT || 3000;

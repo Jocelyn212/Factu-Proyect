@@ -21,7 +21,7 @@ function Dashboard() {
 export default Dashboard; */
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FaUserFriends, FaFileInvoiceDollar, FaHome } from 'react-icons/fa';
+import { FaUserFriends, FaFileInvoiceDollar, FaHome, FaFileInvoice } from 'react-icons/fa';
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -30,6 +30,7 @@ function Dashboard() {
     { icon: <FaHome className="text-4xl mx-auto" />, name: "Dashboard", route: "/dashboard" },
     { icon: <FaUserFriends className="text-4xl mx-auto" />, name: "Clientes", route: "/clients" },
     { icon: <FaFileInvoiceDollar className="text-4xl mx-auto" />, name: "Presupuestos", route: "/budgets" },
+    { icon: <FaFileInvoice className="text-4xl mx-auto" />, name: "Facturas", route: "/invoices" },
   ];
 
   const handleCardClick = (route) => {
