@@ -819,12 +819,15 @@ function Invoices() {
 }
 
 export default Invoices; */
-import { useState, useEffect, useRef } from "react";
+
+// CODIGO QUE FUNCIONA
+/* import { useState, useEffect, useRef } from "react";
 import InvoiceForm from "../components/InvoiceForm";
 import InvoiceList from "../components/InvoiceList";
 import { API_URL } from "../config";
-/* import InvoiceTemplate from "../components/InvoiceTemplate"; */
+//import InvoiceTemplate from "../components/InvoiceTemplate"; 
 import { jsPDF } from "jspdf";
+import "jspdf-autotable";
 
 function Invoices() {
   const [invoices, setInvoices] = useState([]);
@@ -944,6 +947,272 @@ function Invoices() {
         </div>
       </form>
       <InvoiceList invoices={invoices} onSelectInvoice={handleSelectInvoice} />
+    </div>
+  );
+}
+
+export default Invoices; */
+
+// CODIGO DE PRUEBA
+/* import React, { useState, useEffect, useRef } from "react";
+import axios from "axios";
+import InvoiceForm from "../components/InvoiceForm";
+import { jsPDF } from "jspdf";
+import { API_URL } from "../config";
+import "jspdf-autotable";
+
+const Invoices = () => {
+  const [invoices, setInvoices] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedInvoice, setSelectedInvoice] = useState(null);
+  const [previewInvoice, setPreviewInvoice] = useState(null);
+  const [error, setError] = useState(null);
+  const componentRef = useRef(null);
+
+  const fetchInvoices = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/invoices`);
+      setInvoices(response.data);
+      setError(null);
+    } catch (error) {
+      console.error("Error al cargar las facturas:", error);
+      setError(
+        "No se pudieron cargar las facturas. Intenta nuevamente más tarde."
+      );
+    }
+  };
+
+  useEffect(() => {
+    fetchInvoices();
+  }, []);
+
+  const filteredInvoices = invoices.filter((invoice) =>
+    invoice.clientName.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const generatePdf = () => {
+    if (!previewInvoice) {
+      console.error("No hay factura para generar el PDF.");
+      return;
+    }
+
+    const doc = new jsPDF();
+
+    // Logo
+    const logoUrl =
+      "https://res.cloudinary.com/pruebaweb/image/upload/v1740180968/LogoEdu_toe1na.png";
+    doc.addImage(logoUrl, "PNG", 14, 10, 40, 20);
+
+    // Datos de la empresa
+    doc.setFontSize(10);
+    doc.text("OBRES I SERVEIS MIG-MON 2022 S.C.P", 190, 15, { align: "right" });
+    doc.text("ARQUITECTE GAUDI 7 3º 2º", 190, 20, { align: "right" });
+    doc.text("SANT FRUITOS DE BAGES", 190, 25, { align: "right" });
+    doc.text("08272", 190, 30, { align: "right" });
+    doc.text("Email: info@yourcompany.com", 190, 35, { align: "right" });
+    doc.text("Phone: 34 625254144 - 653903600", 190, 40, { align: "right" });
+
+    // Título
+    doc.setFontSize(14);
+    doc.text("Factura", 14, 55);
+
+    // Información del cliente
+    doc.setFontSize(12);
+    doc.text(`Cliente: ${previewInvoice.clientName}`, 14, 65);
+    doc.text(`NIF: ${previewInvoice.clientNIF}`, 14, 70);
+    doc.text(`Dirección: ${previewInvoice.clientAddress}`, 14, 75);
+    doc.text(`Teléfono: ${previewInvoice.clientPhone}`, 14, 80);
+
+    // Tabla de productos/servicios
+    const tableData = previewInvoice.items.map((item) => [
+      item.description,
+      `${item.price.toFixed(2)} €`,
+    ]);
+
+    tableData.push([
+      { content: "Total", colSpan: 3, styles: { halign: "right" } },
+      `${previewInvoice.total.toFixed(2)} €`,
+    ]);
+
+    doc.autoTable({
+      startY: 90,
+      head: [["Descripción", "Precio (€)"]],
+      body: tableData,
+      theme: "grid",
+      headStyles: { fillColor: [224, 224, 224] },
+      columnStyles: {
+        0: { cellWidth: 120 },
+        1: { cellWidth: 70, halign: "right" },
+      },
+    });
+
+    // Guardar PDF
+    doc.save(`Factura_${previewInvoice.clientName}.pdf`);
+  };
+
+  return (
+    <div className="min-h-screen p-6">
+      <h1 className="text-3xl mb-4">Facturas</h1>
+
+      <InvoiceForm
+        fetchInvoices={fetchInvoices}
+        selectedInvoice={selectedInvoice}
+        setSelectedInvoice={setSelectedInvoice}
+      />
+
+      <h2 className="text-2xl mb-4">Lista de Facturas</h2>
+      <input
+        type="text"
+        placeholder="Buscar por nombre del cliente"
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        className="mb-4 p-2 border rounded w-full"
+      />
+      {error && <p className="text-red-500">{error}</p>}
+      {filteredInvoices.length === 0 ? (
+        <p>No se encontraron facturas.</p>
+      ) : (
+        <ul>
+          {filteredInvoices.map((invoice) => (
+            <li key={invoice._id} className="mb-2">
+              <div className="flex justify-between items-center">
+                <span>
+                  {invoice.clientName} - {invoice.total}€
+                </span>
+                <div>
+                  <button
+                    onClick={() => setPreviewInvoice(invoice)}
+                    className="bg-blue-500 text-white p-2 rounded mr-2"
+                  >
+                    Vista Previa
+                  </button>
+                  <button
+                    onClick={generatePdf}
+                    className={`bg-green-500 text-white p-2 rounded ${
+                      !previewInvoice ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
+                    disabled={!previewInvoice}
+                  >
+                    Guardar como PDF
+                  </button>
+                </div>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {previewInvoice && (
+        <div className="mt-8 border p-6 bg-white shadow-lg max-w-[800px] mx-auto">
+          <h2 className="text-2xl mb-4">Vista Previa de la Factura</h2>
+          <div className="p-6 border bg-gray-100 w-full mx-auto">
+            
+            <div className="flex justify-between">
+              <img
+                src="https://res.cloudinary.com/pruebaweb/image/upload/v1740180968/LogoEdu_toe1na.png"
+                alt="Logo"
+                className="w-40 h-auto object-contain"
+              />
+              <div className="text-right text-sm">
+                <p className="font-bold">OBRES I SERVEIS MIG-MON 2022 S.C.P</p>
+                <p>ARQUITECTE GAUDI 7 3º 2º</p>
+                <p>SANT FRUITOS DE BAGES</p>
+                <p>08272</p>
+                <p>Email: info@yourcompany.com</p>
+                <p>Phone: 34 625254144 - 653903600</p>
+              </div>
+            </div>
+
+           
+            <p>
+              <strong>Cliente:</strong> {previewInvoice.clientName}
+            </p>
+            <p>
+              <strong>NIF:</strong> {previewInvoice.clientNIF}
+            </p>
+            <p>
+              <strong>Dirección:</strong> {previewInvoice.clientAddress}
+            </p>
+            <p>
+              <strong>Teléfono:</strong> {previewInvoice.clientPhone}
+            </p>
+            <table className="w-full mt-4 border-collapse border border-gray-300">
+              <thead>
+                <tr className="bg-gray-200">
+                  <th className="border border-gray-400 p-2 text-left">
+                    Descripción
+                  </th>
+                  <th className="border border-gray-400 p-2 text-right">
+                    Total (€)
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {previewInvoice.items?.map((item, index) => (
+                  <tr key={index}>
+                    <td className="border border-gray-400 p-2">
+                      {item.description}
+                    </td>
+                    <td className="border border-gray-400 p-2 text-right">
+                      {item.total.toFixed(2)} €
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <p className="mt-4 font-bold text-right">
+              Total: €{previewInvoice.total.toFixed(2)}
+            </p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default Invoices;
+ */
+
+import React, { useState, useEffect } from "react";
+import InvoiceForm from "../components/InvoiceForm";
+import InvoiceList from "../components/InvoiceList";
+import axios from "axios";
+import { API_URL } from "../config";
+
+function Invoices() {
+  const [invoices, setInvoices] = useState([]);
+
+  // Cargar facturas desde la API
+  const fetchInvoices = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/invoices`);
+      setInvoices(response.data);
+    } catch (error) {
+      console.error("Error al cargar las facturas:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchInvoices();
+  }, []);
+
+  // Añadir nueva factura
+  const addInvoice = async (newInvoice) => {
+    try {
+      const response = await axios.post(`${API_URL}/invoices`, newInvoice, {
+        headers: { "Content-Type": "application/json" },
+      });
+      setInvoices([...invoices, response.data]);
+    } catch (error) {
+      console.error("Error al añadir factura:", error);
+    }
+  };
+
+  return (
+    <div className="min-h-screen p-6">
+      <h1 className="text-3xl mb-6">Gestión de Facturas</h1>
+      <InvoiceForm addInvoice={addInvoice} />
+      <InvoiceList invoices={invoices} />
     </div>
   );
 }

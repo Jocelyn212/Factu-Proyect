@@ -951,7 +951,7 @@ const Budgets = () => {
                     }`}
                     disabled={!previewBudget}
                   >
-                    Imprimir / Guardar como PDF
+                    Guardar como PDF
                   </button>
                 </div>
               </div>
