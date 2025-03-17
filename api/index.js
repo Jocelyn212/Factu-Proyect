@@ -38,7 +38,16 @@ dotenv.config();
 
 const app = express();
 app.use(express.json());
-app.use(cors());
+/* app.use(cors()); */
+const corsOptions = {
+  origin: ["https://factu-proyect.vercel.app", "http://localhost:5173"],
+  methods: "GET,POST,PUT,DELETE",
+  allowedHeaders: ["Content-Type"],
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
+
 
 // Conexión a MongoDB
 mongoose
