@@ -48,14 +48,13 @@ import Budgets from "./pages/Budgets";
 import { AuthProvider } from './context/AuthContext';
 import PrivateRoute from './components/PrivateRoute';
 import InvoiceForm from "./components/InvoiceForm";
-/* import InvoiceList from "./components/InvoiceList"; */
 import InvoiceDetail from "./components/InvoiceDetail";
 import Invoices from "./pages/Invoice";
 
 function App() {
   return (
     <AuthProvider>
-      <Router>
+      <Router basename="/">
         <Navbar />
         <Routes>
           <Route path="/login" element={<Login />} />
