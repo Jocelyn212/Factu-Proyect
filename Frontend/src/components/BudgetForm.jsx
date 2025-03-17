@@ -191,8 +191,7 @@ const BudgetForm = ({ fetchBudgets, selectedBudget, setSelectedBudget }) => {
         setSelectedBudget(null);
       } else {
         await axios.post(`${API_URL}/budgets`, budgetData, {
-          headers: { 'Content-Type': 'application/json' },
-          withCredentials: true,
+          headers: { 'Content-Type': 'application/json' }
         });
       }
 

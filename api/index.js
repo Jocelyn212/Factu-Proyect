@@ -38,7 +38,26 @@ dotenv.config();
 
 const app = express();
 app.use(express.json());
-app.use(cors());
+
+const allowedOrigins = [
+  "https://factu-proyect.vercel.app", // Tu frontend en producción
+  "http://localhost:5173", // Para desarrollo local
+];
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("CORS bloqueado"));
+    }
+  },
+  methods: "GET,POST,PUT,DELETE",
+  credentials: true, // Habilita envío de cookies y headers de autenticación
+};
+
+app.use(cors(corsOptions));
+
 
 
 
