@@ -1,4 +1,4 @@
-/* import React, { useState, useEffect } from 'react';
+/* /* import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import BudgetForm from '../components/BudgetForm';
 import jsPDF from 'jspdf';
@@ -817,7 +817,7 @@ const Budgets = () => {
 export default Budgets;
  */
 
-import React, { useState, useEffect, useRef } from "react";
+/* import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import BudgetForm from "../components/BudgetForm";
 import { jsPDF } from "jspdf";
@@ -964,7 +964,7 @@ const Budgets = () => {
         <div className="mt-8 border p-6 bg-white shadow-lg max-w-[800px] mx-auto">
           <h2 className="text-2xl mb-4">Vista Previa del Presupuesto</h2>
           <div className="p-6 border bg-gray-100 w-full mx-auto">
-            {/* Encabezado con logo y datos de la empresa */}
+           
             <div className="flex justify-between">
               <img
                 src="https://res.cloudinary.com/pruebaweb/image/upload/v1740180968/LogoEdu_toe1na.png"
@@ -981,7 +981,208 @@ const Budgets = () => {
               </div>
             </div>
 
-            {/* Información del cliente y los servicios */}
+            
+            <h3 className="mt-4 text-lg font-bold">Presupuesto</h3>
+            <p>
+              <strong>Cliente:</strong> {previewBudget.clientName}
+            </p>
+            <p>
+              <strong>Teléfono:</strong> {previewBudget.clientPhone}
+            </p>
+            <table className="w-full mt-4 border-collapse border border-gray-300">
+              <thead>
+                <tr className="bg-gray-200">
+                  <th className="border border-gray-400 p-2 text-left">
+                    Descripción
+                  </th>
+                  <th className="border border-gray-400 p-2 text-right">
+                    Precio (€)
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {previewBudget.services?.map((service, index) => (
+                  <tr key={index}>
+                    <td className="border border-gray-400 p-2">
+                      {service.description}
+                    </td>
+                    <td className="border border-gray-400 p-2 text-right">
+                      {service.price.toFixed(2)} €
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <p className="mt-4 font-bold text-right">
+              Total: €{previewBudget.total.toFixed(2)}
+            </p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default Budgets; */
+import React, { useState, useEffect, useRef } from "react";
+import axios from "axios";
+import BudgetForm from "../components/BudgetForm";
+import { jsPDF } from "jspdf";
+import { API_URL } from "../config";
+import "jspdf-autotable";
+
+const Budgets = () => {
+  const [budgets, setBudgets] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedBudget, setSelectedBudget] = useState(null);
+  const [previewBudget, setPreviewBudget] = useState(null);
+  const [error, setError] = useState(null);
+  const componentRef = useRef(null);
+
+  const fetchBudgets = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/budgets`);
+      setBudgets(response.data);
+      setError(null);
+    } catch (error) {
+      console.error("Error al cargar los presupuestos:", error);
+      setError("No se pudieron cargar los presupuestos. Intenta nuevamente más tarde.");
+    }
+  };
+
+  useEffect(() => {
+    fetchBudgets();
+  }, []);
+
+  const filteredBudgets = budgets.filter((budget) =>
+    budget.clientName && budget.clientName.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const handleEditBudget = (budget) => {
+    setSelectedBudget(budget);
+  };
+
+  const generatePdf = () => {
+    if (!previewBudget) {
+      console.error("No hay presupuesto para generar el PDF.");
+      return;
+    }
+
+    const doc = new jsPDF();
+    const logoUrl = "https://res.cloudinary.com/pruebaweb/image/upload/v1740180968/LogoEdu_toe1na.png";
+    doc.addImage(logoUrl, "PNG", 14, 10, 40, 20);
+    
+    doc.setFontSize(10);
+    doc.text("OBRES I SERVEIS MIG-MON 2022 S.C.P", 190, 15, { align: "right" });
+    doc.text("ARQUITECTE GAUDI 7 3º 2º", 190, 20, { align: "right" });
+    doc.text("SANT FRUITOS DE BAGES", 190, 25, { align: "right" });
+    doc.text("08272", 190, 30, { align: "right" });
+    doc.text("Email: info@yourcompany.com", 190, 35, { align: "right" });
+    doc.text("Phone: 34 625254144 - 653903600", 190, 40, { align: "right" });
+    
+    doc.setFontSize(14);
+    doc.text("Presupuesto", 14, 55);
+    
+    doc.setFontSize(12);
+    doc.text(`Cliente: ${previewBudget.clientName}`, 14, 65);
+    doc.text(`Teléfono: ${previewBudget.clientPhone}`, 14, 70);
+    
+    const tableData = previewBudget.services.map((service) => [
+      service.description,
+      service.price.toFixed(2) + " €",
+    ]);
+
+    tableData.push(["Total", previewBudget.total.toFixed(2) + " €"]);
+
+    doc.autoTable({
+      startY: 80,
+      head: [["Descripción", "Precio (€)"]],
+      body: tableData,
+      theme: "grid",
+      headStyles: { fillColor: [224, 224, 224] },
+      columnStyles: {
+        0: { cellWidth: 120 },
+        1: { cellWidth: 70, halign: "right" },
+      },
+    });
+
+    const finalY = doc.lastAutoTable.finalY || 100;
+    doc.setFontSize(10);
+    doc.text("Este presupuesto tiene una validez de 15 días. Al monto total debe sumarse el IVA correspondiente.", 14, finalY + 10);
+
+    doc.save(`Presupuesto_${previewBudget.clientName}.pdf`);
+  };
+
+  return (
+    <div className="min-h-screen p-6">
+      <h1 className="text-3xl mb-4">Presupuestos</h1>
+      <BudgetForm fetchBudgets={fetchBudgets} selectedBudget={selectedBudget} setSelectedBudget={setSelectedBudget} />
+
+      <h2 className="text-2xl mb-4">Lista de Presupuestos</h2>
+      <input
+        type="text"
+        placeholder="Buscar por nombre del cliente"
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        className="mb-4 p-2 border rounded w-full"
+      />
+      {error && <p className="text-red-500">{error}</p>}
+      {filteredBudgets.length === 0 ? (
+        <p>No se encontraron presupuestos.</p>
+      ) : (
+        <ul>
+          {filteredBudgets.map((budget) => (
+            <li key={budget._id} className="mb-2">
+              <div className="flex justify-between items-center">
+                <span>{budget.clientName} - {budget.total}€</span>
+                <div>
+                  <button
+                    onClick={() => setPreviewBudget(budget)}
+                    className="bg-blue-500 text-white p-2 rounded mr-2"
+                  >
+                    Vista Previa
+                  </button>
+                  <button
+                    onClick={() => handleEditBudget(budget)}
+                    className="bg-yellow-500 text-white p-2 rounded mr-2"
+                  >
+                    Editar
+                  </button>
+                  <button
+                    onClick={generatePdf}
+                    className={`bg-green-500 text-white p-2 rounded ${!previewBudget ? "opacity-50 cursor-not-allowed" : ""}`}
+                    disabled={!previewBudget}
+                  >
+                    Guardar como PDF
+                  </button>
+                </div>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+     {previewBudget && (
+        <div className="mt-8 border p-6 bg-white shadow-lg max-w-[800px] mx-auto">
+          <h2 className="text-2xl mb-4">Vista Previa del Presupuesto</h2>
+          <div className="p-6 border bg-gray-100 w-full mx-auto">
+           
+            <div className="flex justify-between">
+              <img
+                src="https://res.cloudinary.com/pruebaweb/image/upload/v1740180968/LogoEdu_toe1na.png"
+                alt="Logo"
+                className="w-40 h-auto object-contain"
+              />
+              <div className="text-right text-sm">
+                <p className="font-bold">OBRES I SERVEIS MIG-MON 2022 S.C.P</p>
+                <p>ARQUITECTE GAUDI 7 3º 2º</p>
+                <p>SANT FRUITOS DE BAGES</p>
+                <p>08272</p>
+                <p>Email: info@yourcompany.com</p>
+                <p>Phone: 34 625254144 - 653903600</p>
+              </div>
+            </div>
+
+            
             <h3 className="mt-4 text-lg font-bold">Presupuesto</h3>
             <p>
               <strong>Cliente:</strong> {previewBudget.clientName}

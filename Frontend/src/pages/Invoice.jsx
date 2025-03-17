@@ -701,7 +701,7 @@ function Invoices() {
   );
 }
 
-export default Invoices; */ 
+export default Invoices; */
 
 /* import { useState, useEffect, useRef } from "react";
 import InvoiceForm from "../components/InvoiceForm";
@@ -1173,7 +1173,7 @@ const Invoices = () => {
 export default Invoices;
  */
 
-import React, { useState, useEffect } from "react";
+/* import React, { useState, useEffect } from "react";
 import InvoiceForm from "../components/InvoiceForm";
 import InvoiceList from "../components/InvoiceList";
 import axios from "axios";
@@ -1213,6 +1213,400 @@ function Invoices() {
       <h1 className="text-3xl mb-6">Gestión de Facturas</h1>
       <InvoiceForm addInvoice={addInvoice} />
       <InvoiceList invoices={invoices} />
+    </div>
+  );
+}
+
+export default Invoices; */
+
+//ULTIMO CODIGO QUE FUNCIONA CON FALLOS EN LA VISTA PREVIA Y EN EL DISEÑO DE LA FACTURA
+
+/* import { useState, useEffect, useRef } from "react";
+import InvoiceForm from "../components/InvoiceForm";
+import InvoiceList from "../components/InvoiceList";
+import { API_URL } from "../config";
+import { jsPDF } from "jspdf";
+import "jspdf-autotable";
+
+function Invoices() {
+  const [invoices, setInvoices] = useState([]);
+  const [selectedInvoice, setSelectedInvoice] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [month, setMonth] = useState("");
+
+  // 🔹 Cargar facturas desde la API
+  const fetchInvoices = async (clientName = "", month = "") => {
+    try {
+      let query = `${API_URL}/invoices`;
+      if (clientName || month) {
+        query += "?";
+        if (clientName) query += `clientName=${clientName}&`;
+        if (month) query += `month=${month}&`;
+      }
+
+      const response = await fetch(query);
+      if (!response.ok) throw new Error(`Error: ${response.status} ${response.statusText}`);
+
+      const data = await response.json();
+      setInvoices(data);
+    } catch (error) {
+      console.error("Failed to fetch invoices:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchInvoices();
+  }, []);
+
+  // 🔹 Buscar facturas
+  const handleSearch = (e) => {
+    e.preventDefault();
+    fetchInvoices(searchTerm, month);
+  };
+
+  // 🔹 Generar número de factura automático
+  const getNextInvoiceNumber = () => {
+    if (invoices.length === 0) return "01/2025";
+    const lastInvoice = invoices[invoices.length - 1];
+    const lastNumber = parseInt(lastInvoice.invoiceNumber.split("/")[0], 10);
+    return `${(lastNumber + 1).toString().padStart(2, "0")}/2025`;
+  };
+
+  // 🔹 Agregar una nueva factura
+  const addInvoice = async (invoice) => {
+    try {
+      const newInvoice = {
+        ...invoice,
+        invoiceNumber: getNextInvoiceNumber(),
+        createdAt: new Date().toISOString().split("T")[0], // Fecha actual en formato YYYY-MM-DD
+      };
+
+      const response = await fetch(`${API_URL}/invoices`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newInvoice),
+      });
+
+      if (!response.ok) throw new Error(`Error: ${response.status} ${response.statusText}`);
+
+      fetchInvoices();
+    } catch (error) {
+      console.error("Failed to add invoice:", error);
+    }
+  };
+
+  // 🔹 Generar PDF con jsPDF y autoTable
+  const handleDownloadPDF = () => {
+    if (!selectedInvoice) return;
+
+    const doc = new jsPDF();
+    
+    // 🔸 Agregar encabezado de la empresa
+    doc.setFontSize(14);
+    doc.text("OBRES I SERVEIS MIG-MON 2022 S.C.P", 105, 20, { align: "center" });
+    doc.setFontSize(10);
+    doc.text("ARQUITECTE GAUDI 7 3º 2º", 105, 26, { align: "center" });
+    doc.text("SANT FRUITOS DE BAGES, 08272", 105, 32, { align: "center" });
+    doc.text("Email: info@yourcompany.com", 105, 38, { align: "center" });
+    doc.text("Phone: 34 625254144 - 653903600", 105, 44, { align: "center" });
+
+    // 🔸 Datos de la factura
+    doc.setFontSize(12);
+    doc.text(`Factura Nº: ${selectedInvoice.invoiceNumber}`, 14, 60);
+    doc.text(`Fecha: ${selectedInvoice.createdAt}`, 14, 66);
+
+    // 🔸 Datos del cliente
+    doc.text("Cliente:", 14, 76);
+    doc.setFontSize(10);
+    doc.text(`Nombre: ${selectedInvoice.clientName}`, 14, 82);
+    doc.text(`NIF: ${selectedInvoice.clientNIF}`, 14, 88);
+    doc.text(`Dirección: ${selectedInvoice.clientAddress}`, 14, 94);
+    doc.text(`Teléfono: ${selectedInvoice.clientPhone}`, 14, 100);
+
+    // 🔸 Tabla de servicios
+    const tableData = selectedInvoice.services.map((service) => [
+      service.description,
+      `${service.amount.toFixed(2)} €`,
+    ]);
+
+    doc.autoTable({
+      startY: 110,
+      head: [["Descripción", "Importe (€)"]],
+      body: tableData,
+      theme: "grid",
+      styles: { fontSize: 10 },
+      headStyles: { fillColor: [200, 200, 200] },
+    });
+
+    // 🔸 Totales
+    let finalY = doc.lastAutoTable.finalY + 10;
+    doc.setFontSize(12);
+    doc.text(`Subtotal: ${selectedInvoice.totalAmount.toFixed(2)} €`, 140, finalY);
+    doc.text(`IVA (21%): ${selectedInvoice.vat.toFixed(2)} €`, 140, finalY + 6);
+    doc.text(`Total: ${selectedInvoice.total.toFixed(2)} €`, 140, finalY + 12);
+
+    // 🔸 Guardar PDF
+    doc.save(`Factura_${selectedInvoice.invoiceNumber}.pdf`);
+  };
+
+  return (
+    <div className="min-h-screen p-6">
+      <h1 className="text-3xl mb-4">Facturas</h1>
+
+      //Formulario para crear facturas 
+      <InvoiceForm addInvoice={addInvoice} />
+
+      // Buscador de facturas 
+      <form onSubmit={handleSearch} className="mb-4">
+        <div className="flex space-x-4">
+          <input
+            type="text"
+            placeholder="Busca por cliente"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="border p-2 flex-1"
+          />
+          <input
+            type="month"
+            value={month}
+            onChange={(e) => setMonth(e.target.value)}
+            className="border p-2"
+          />
+          <button type="submit" className="bg-gray-400 text-white p-2 px-4 rounded">
+            Buscar
+          </button>
+        </div>
+      </form>
+
+      //Lista de facturas 
+      <InvoiceList invoices={invoices} onSelectInvoice={setSelectedInvoice} />
+
+      // Botón de descarga de PDF 
+      {selectedInvoice && (
+        <button onClick={handleDownloadPDF} className="bg-green-500 text-white p-2 mt-4">
+          Descargar PDF
+        </button>
+      )}
+    </div>
+  );
+}
+
+export default Invoices; */
+
+import { useState, useEffect, useRef } from "react";
+import InvoiceForm from "../components/InvoiceForm";
+import InvoiceList from "../components/InvoiceList";
+import { API_URL } from "../config";
+import { jsPDF } from "jspdf";
+import "jspdf-autotable";
+
+function Invoices() {
+  const [invoices, setInvoices] = useState([]);
+  const [selectedInvoice, setSelectedInvoice] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [month, setMonth] = useState("");
+  const componentRef = useRef(); // Referencia para la vista previa
+
+  // 🔹 Cargar facturas desde la API
+  const fetchInvoices = async (clientName = "", month = "") => {
+    try {
+      let query = `${API_URL}/invoices`;
+      if (clientName || month) {
+        query += "?";
+        if (clientName) query += `clientName=${clientName}&`;
+        if (month) query += `month=${month}&`;
+      }
+
+      const response = await fetch(query);
+      if (!response.ok)
+        throw new Error(`Error: ${response.status} ${response.statusText}`);
+
+      const data = await response.json();
+      setInvoices(data);
+    } catch (error) {
+      console.error("Failed to fetch invoices:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchInvoices();
+  }, []);
+
+  // 🔹 Buscar facturas
+  const handleSearch = (e) => {
+    e.preventDefault();
+    fetchInvoices(searchTerm, month);
+  };
+
+  // 🔹 Generar número de factura automático
+  const getNextInvoiceNumber = () => {
+    if (invoices.length === 0) return "01/25";
+    const lastInvoice = invoices[invoices.length - 1];
+    const lastNumber = parseInt(lastInvoice.invoiceNumber.split("/")[0], 10);
+    return `${(lastNumber + 1).toString().padStart(2, "0")}/25`;
+  };
+
+  // 🔹 Formato de fecha `dd/mm/aa`
+  const formatDate = (isoDate) => {
+    const date = new Date(isoDate);
+    return date.toLocaleDateString("es-ES").slice(0, 8); // `dd/mm/aa`
+  };
+
+  // 🔹 Agregar una nueva factura
+  const addInvoice = async (invoice) => {
+    try {
+      const newInvoice = {
+        ...invoice,
+        invoiceNumber: getNextInvoiceNumber(),
+        createdAt: formatDate(new Date()), // Guardar fecha en formato `dd/mm/aa`
+      };
+
+      const response = await fetch(`${API_URL}/invoices`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newInvoice),
+      });
+
+      if (!response.ok)
+        throw new Error(`Error: ${response.status} ${response.statusText}`);
+
+      fetchInvoices();
+    } catch (error) {
+      console.error("Failed to add invoice:", error);
+    }
+  };
+
+  // 🔹 Descargar PDF con `jsPDF`
+  const handleDownloadPDF = () => {
+    if (!selectedInvoice) return;
+
+    const doc = new jsPDF();
+
+    // 🔹 Encabezado
+    doc.setFontSize(14);
+    doc.text("OBRES I SERVEIS MIG-MON 2022 S.C.P", 105, 20, {
+      align: "center",
+    });
+    doc.setFontSize(10);
+    doc.text("ARQUITECTE GAUDI 7 3º 2º", 105, 26, { align: "center" });
+    doc.text("SANT FRUITOS DE BAGES, 08272", 105, 32, { align: "center" });
+    doc.text("Email: info@yourcompany.com", 105, 38, { align: "center" });
+    doc.text("Phone: 34 625254144 - 653903600", 105, 44, { align: "center" });
+
+    // 🔹 Datos de la factura
+    doc.setFontSize(12);
+    doc.text(`Factura Nº: ${selectedInvoice.invoiceNumber}`, 14, 60);
+    doc.text(`Fecha: ${selectedInvoice.createdAt}`, 14, 66);
+
+    // 🔹 Datos del cliente
+    doc.text("Cliente:", 14, 76);
+    doc.setFontSize(10);
+    doc.text(`Nombre: ${selectedInvoice.clientName}`, 14, 82);
+    doc.text(`NIF: ${selectedInvoice.clientNIF || "N/A"}`, 14, 88);
+    doc.text(`Dirección: ${selectedInvoice.clientAddress || "N/A"}`, 14, 94);
+    doc.text(`Teléfono: ${selectedInvoice.clientPhone || "N/A"}`, 14, 100);
+
+    // 🔹 Tabla de servicios
+    const tableData = selectedInvoice.services.map((service) => [
+      service.description || "Sin descripción",
+      `${parseFloat(service.amount || 0).toFixed(2)} €`,
+    ]);
+
+    doc.autoTable({
+      startY: 110,
+      head: [["Descripción", "Importe (€)"]],
+      body: tableData,
+      theme: "grid",
+      styles: { fontSize: 10 },
+      headStyles: { fillColor: [200, 200, 200] },
+    });
+
+    // 🔹 Totales
+    let finalY = doc.lastAutoTable.finalY + 10;
+    doc.setFontSize(12);
+    doc.text(
+      `Subtotal: ${parseFloat(selectedInvoice.totalAmount || 0).toFixed(2)} €`,
+      140,
+      finalY
+    );
+    doc.text(
+      `IVA (21%): ${parseFloat(selectedInvoice.vat || 0).toFixed(2)} €`,
+      140,
+      finalY + 6
+    );
+    doc.text(
+      `Total: ${parseFloat(selectedInvoice.total || 0).toFixed(2)} €`,
+      140,
+      finalY + 12
+    );
+
+    // 🔹 Guardar PDF
+    doc.save(`Factura_${selectedInvoice.invoiceNumber}.pdf`);
+  };
+
+  return (
+    <div className="min-h-screen p-6">
+      <h1 className="text-3xl mb-4">Facturas</h1>
+
+      {/* Formulario para crear facturas */}
+      <InvoiceForm addInvoice={addInvoice} />
+
+      {/* Buscador de facturas */}
+      <form onSubmit={handleSearch} className="mb-4">
+        <div className="flex space-x-4">
+          <input
+            type="text"
+            placeholder="Busca por cliente"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="border p-2 flex-1"
+          />
+          <input
+            type="month"
+            value={month}
+            onChange={(e) => setMonth(e.target.value)}
+            className="border p-2"
+          />
+          <button
+            type="submit"
+            className="bg-gray-400 text-white p-2 px-4 rounded"
+          >
+            Buscar
+          </button>
+        </div>
+      </form>
+
+      {/* Lista de facturas */}
+      <InvoiceList invoices={invoices} onSelectInvoice={setSelectedInvoice} />
+
+      {/* Vista previa de la factura */}
+      {selectedInvoice && (
+        <div ref={componentRef} className="bg-white p-6 shadow-md mt-6">
+          <h2 className="text-2xl">Factura</h2>
+          <p>
+            <strong>Cliente:</strong> {selectedInvoice.clientName}
+          </p>
+          <p>
+            <strong>NIF:</strong> {selectedInvoice.clientNIF}
+          </p>
+          <p>
+            <strong>Dirección:</strong> {selectedInvoice.clientAddress}
+          </p>
+          <p>
+            <strong>Teléfono:</strong> {selectedInvoice.clientPhone}
+          </p>
+        </div>
+      )}
+
+      {/* Botón de descarga de PDF */}
+      {selectedInvoice && (
+        <button
+          onClick={handleDownloadPDF}
+          className="bg-green-500 text-white p-2 mt-4"
+        >
+          Descargar PDF
+        </button>
+      )}
     </div>
   );
 }
