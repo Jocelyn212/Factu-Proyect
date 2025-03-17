@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { API_URL } from "../config";
 
 const BudgetForm = ({ fetchBudgets, selectedBudget, setSelectedBudget }) => {
-  const [clientName, setClientName] = useState('');
-  const [clientPhone, setClientPhone] = useState('');
-  const [services, setServices] = useState([{ description: '', price: '' }]);
+  const [clientName, setClientName] = useState("");
+  const [clientPhone, setClientPhone] = useState("");
+  const [services, setServices] = useState([{ description: "", price: "" }]);
 
   useEffect(() => {
     if (selectedBudget) {
@@ -23,7 +24,7 @@ const BudgetForm = ({ fetchBudgets, selectedBudget, setSelectedBudget }) => {
   };
 
   const handleAddService = () => {
-    setServices([...services, { description: '', price: '' }]);
+    setServices([...services, { description: "", price: "" }]);
   };
 
   const handleRemoveService = (index) => {
@@ -36,31 +37,36 @@ const BudgetForm = ({ fetchBudgets, selectedBudget, setSelectedBudget }) => {
       const budgetData = {
         clientName,
         clientPhone,
-        services: services.map(service => ({
+        services: services.map((service) => ({
           description: service.description,
-          price: parseFloat(service.price)
-        }))
+          price: parseFloat(service.price),
+        })),
       };
 
       if (selectedBudget) {
-        await axios.put(`http://localhost:3000/api/budgets/${selectedBudget._id}`, budgetData);
+        await axios.put(`${API_URL}/budgets/${selectedBudget._id}`, budgetData);
         setSelectedBudget(null);
       } else {
-        await axios.post('http://localhost:3000/api/budgets', budgetData);
+        await axios.post(`${API_URL}/budgets`, budgetData);
       }
 
       fetchBudgets();
-      setClientName('');
-      setClientPhone('');
-      setServices([{ description: '', price: '' }]);
+      setClientName("");
+      setClientPhone("");
+      setServices([{ description: "", price: "" }]);
     } catch (error) {
-      console.error('Error al guardar el presupuesto:', error);
+      console.error("Error al guardar el presupuesto:", error);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-lg mx-auto p-4 bg-white shadow-md rounded">
-      <h2 className="text-2xl font-bold mb-4">{selectedBudget ? 'Editar Presupuesto' : 'Crear Presupuesto'}</h2>
+    <form
+      onSubmit={handleSubmit}
+      className="max-w-lg mx-auto p-4 bg-white shadow-md rounded"
+    >
+      <h2 className="text-2xl font-bold mb-4">
+        {selectedBudget ? "Editar Presupuesto" : "Crear Presupuesto"}
+      </h2>
       <div className="mb-4">
         <label className="block text-gray-700">Nombre del Cliente</label>
         <input
@@ -124,7 +130,7 @@ const BudgetForm = ({ fetchBudgets, selectedBudget, setSelectedBudget }) => {
         type="submit"
         className="w-full px-4 py-2 bg-green-500 text-white rounded"
       >
-        {selectedBudget ? 'Guardar Cambios' : 'Crear Presupuesto'}
+        {selectedBudget ? "Guardar Cambios" : "Crear Presupuesto"}
       </button>
     </form>
   );
