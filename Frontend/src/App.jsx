@@ -36,19 +36,16 @@ function App() {
 
 export default App; */
 
-
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 import Clients from "./pages/Clients";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Navbar from "./components/Navbar";
-import './index.css';
+import "./index.css";
 import Budgets from "./pages/Budgets";
-import { AuthProvider } from './context/AuthContext';
-import PrivateRoute from './components/PrivateRoute';
-import InvoiceForm from "./components/InvoiceForm";
-import InvoiceDetail from "./components/InvoiceDetail";
+import { AuthProvider } from "./context/AuthContext";
+import PrivateRoute from "./components/PrivateRoute";
 import Invoices from "./pages/Invoice";
 
 function App() {
@@ -59,29 +56,46 @@ function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route 
-            path="/" 
-            element={<PrivateRoute><Dashboard /></PrivateRoute>} 
+          <Route
+            path="/"
+            element={
+              <PrivateRoute>
+                <Dashboard />
+              </PrivateRoute>
+            }
           />
-          <Route 
-            path="/dashboard" 
-            element={<PrivateRoute><Dashboard /></PrivateRoute>} 
+          <Route
+            path="/dashboard"
+            element={
+              <PrivateRoute>
+                <Dashboard />
+              </PrivateRoute>
+            }
           />
-          <Route 
-            path="/clients" 
-            element={<PrivateRoute><Clients /></PrivateRoute>} 
+          <Route
+            path="/clients"
+            element={
+              <PrivateRoute>
+                <Clients />
+              </PrivateRoute>
+            }
           />
-          <Route 
-            path="/budgets" 
-            element={<PrivateRoute><Budgets /></PrivateRoute>} 
+          <Route
+            path="/budgets"
+            element={
+              <PrivateRoute>
+                <Budgets />
+              </PrivateRoute>
+            }
           />
-           <Route 
-            path="/invoices" 
-            element={<PrivateRoute><Invoices /></PrivateRoute>} 
+          <Route
+            path="/invoices"
+            element={
+              <PrivateRoute>
+                <Invoices />
+              </PrivateRoute>
+            }
           />
-          <Route path="/invoices/new" element={<PrivateRoute><InvoiceForm /></PrivateRoute>} />
-          <Route path="/invoices/:id" element={<PrivateRoute><InvoiceDetail /></PrivateRoute>} />
-          
         </Routes>
       </Router>
     </AuthProvider>

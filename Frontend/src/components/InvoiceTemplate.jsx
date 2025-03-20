@@ -231,6 +231,7 @@ const InvoiceTemplate = forwardRef(({ invoice }, ref) => {
       <div className="mb-4">
         <p><strong>Factura Nº:</strong> {invoice.invoiceNumber}</p>
         <p><strong>Cliente:</strong> {invoice.clientName}</p>
+        <p><strong>Nif:</strong> {invoice.clientNif}</p>
         <p><strong>Fecha:</strong> {new Date(invoice.createdAt).toLocaleDateString()}</p>
       </div>
 

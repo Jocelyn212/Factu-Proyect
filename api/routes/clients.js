@@ -58,4 +58,71 @@ router.post(
   }
 );
 
+router.delete('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Verificar si el cliente existe
+    const client = await Client.findById(id);
+    if (!client) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Cliente no encontrado' 
+      });
+    }
+
+    // Eliminar el cliente
+    await Client.findByIdAndDelete(id);
+    
+    res.json({ 
+      success: true, 
+      message: 'Cliente eliminado correctamente' 
+    });
+  } catch (error) {
+    console.error('Error al eliminar el cliente:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Error al eliminar el cliente', 
+      error: error.message 
+    });
+  }
+});
+// También necesitas asegurarte de tener la ruta PUT para actualizar clientes
+router.put('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updates = req.body;
+    
+    // Verificar si el cliente existe
+    const client = await Client.findById(id);
+    if (!client) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Cliente no encontrado' 
+      });
+    }
+
+    // Actualizar el cliente
+    const updatedClient = await Client.findByIdAndUpdate(
+      id, 
+      updates, 
+      { new: true } // Devuelve el documento actualizado
+    );
+    
+    res.json({ 
+      success: true, 
+      message: 'Cliente actualizado correctamente',
+      client: updatedClient 
+    });
+  } catch (error) {
+    console.error('Error al actualizar el cliente:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Error al actualizar el cliente', 
+      error: error.message 
+    });
+  }
+});
+
+
 module.exports = router;

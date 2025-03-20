@@ -1,4 +1,5 @@
-/* import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
+import { API_URL } from "../config";
 
 function InvoiceForm({ addInvoice }) {
   const [clientName, setClientName] = useState("");
@@ -9,7 +10,7 @@ function InvoiceForm({ addInvoice }) {
   useEffect(() => {
     const fetchClients = async () => {
       try {
-        const response = await fetch("http://localhost:3000/api/clients");
+        const response = await fetch(`${API_URL}/clients`);
         const data = await response.json();
         setClients(data);
       } catch (error) {
@@ -97,7 +98,11 @@ function InvoiceForm({ addInvoice }) {
   );
 }
 
-export default InvoiceForm;  */
+export default InvoiceForm;  
+
+
+//--------------------------------AQUI EMPIEZA EL CODIGO DE LA PAGINA DE INVOICE----------------------------------------------------
+
 
 /* import { useState, useEffect } from "react";
 
@@ -248,9 +253,11 @@ function InvoiceForm({ addInvoice }) {
   );
 }
 
-export default InvoiceForm; */
+export default InvoiceForm; 
+ */
+//--------------------------------AQUI EMPIEZA EL CODIGO DE LA PAGINA DE INVOICE----------------------------------------------------
 
-import { useState, useEffect } from "react";
+/* import { useState, useEffect } from "react";
 
 function InvoiceForm({ addInvoice }) {
   const [clientId, setClientId] = useState("");
@@ -385,4 +392,148 @@ function InvoiceForm({ addInvoice }) {
   );
 }
 
-export default InvoiceForm;
+export default InvoiceForm;  */
+
+
+//--------------------------------AQUI EMPIEZA EL CODIGO DE LA PAGINA DE INVOICE----------------------------------------------------
+
+
+/* import React, { useState, useEffect, useRef } from "react";
+import axios from "axios";
+import { API_URL } from "../config";
+import { jsPDF } from "jspdf";
+import "jspdf-autotable";
+
+const InvoiceForm = ({ fetchInvoices }) => {
+  const [clients, setClients] = useState([]);
+  const [selectedClient, setSelectedClient] = useState(null);
+  const [services, setServices] = useState([{ description: "", amount: "" }]);
+  const [invoiceNumber, setInvoiceNumber] = useState("");
+  const [createdAt, setCreatedAt] = useState(new Date().toLocaleDateString("es-ES"));
+
+  useEffect(() => {
+    const fetchClients = async () => {
+      try {
+        const response = await axios.get(`${API_URL}/clients`);
+        setClients(response.data);
+      } catch (error) {
+        console.error("Error al cargar los clientes:", error);
+      }
+    };
+
+    fetchClients();
+  }, []);
+
+  useEffect(() => {
+    const fetchLastInvoiceNumber = async () => {
+      try {
+        const response = await axios.get(`${API_URL}/invoices/last`);
+        const lastNumber = response.data?.invoiceNumber || "00/2025";
+        const nextNumber = (parseInt(lastNumber.split("/")[0], 10) + 1).toString().padStart(2, "0");
+        setInvoiceNumber(`${nextNumber}/2025`);
+      } catch (error) {
+        console.error("Error al obtener el último número de factura:", error);
+      }
+    };
+    fetchLastInvoiceNumber();
+  }, []);
+
+  const handleClientChange = (event) => {
+    const client = clients.find((c) => c._id === event.target.value);
+    setSelectedClient(client || null);
+  };
+
+  const handleServiceChange = (index, field, value) => {
+    const newServices = [...services];
+    newServices[index][field] = value;
+    setServices(newServices);
+  };
+
+  const handleAddService = () => {
+    setServices([...services, { description: "", amount: "" }]);
+  };
+
+  const handleRemoveService = (index) => {
+    setServices(services.filter((_, i) => i !== index));
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    if (!selectedClient || services.length === 0) {
+      alert("Debes seleccionar un cliente y agregar al menos un servicio.");
+      return;
+    }
+
+    const totalAmount = services.reduce((sum, s) => sum + parseFloat(s.amount || 0), 0);
+    const vat = totalAmount * 0.21;
+    const total = totalAmount + vat;
+
+    const invoiceData = {
+      invoiceNumber,
+      clientId: selectedClient._id,
+      clientName: selectedClient.name,
+      clientNIF: selectedClient.nif,
+      clientAddress: selectedClient.address,
+      clientPhone: selectedClient.phone,
+      services,
+      totalAmount,
+      vat,
+      total,
+      createdAt: new Date().toISOString(),
+    };
+
+    try {
+      await axios.post(`${API_URL}/invoices`, invoiceData);
+      fetchInvoices();
+    } catch (error) {
+      console.error("Error al guardar la factura:", error);
+    }
+  };
+
+  const generatePDF = () => {
+    const doc = new jsPDF();
+    const logoUrl = "https://res.cloudinary.com/pruebaweb/image/upload/v1740180968/LogoEdu_toe1na.png";
+
+    doc.addImage(logoUrl, "PNG", 20, 10, 40, 20);
+    doc.setFontSize(12);
+    doc.text("OBRES I SERVEIS MIG-MON 2022 S.C.P", 180, 15, { align: "right" });
+    doc.text("ARQUITECTE GAUDI 7 3º 2º", 180, 20, { align: "right" });
+    doc.text("SANT FRUITOS DE BAGES, 08272", 180, 25, { align: "right" });
+    doc.text("Email: info@yourcompany.com", 180, 30, { align: "right" });
+    doc.text("Phone: 34 625254144 - 653903600", 180, 35, { align: "right" });
+
+    doc.setFontSize(14);
+    doc.text(`Factura Nº: ${invoiceNumber}`, 20, 60);
+    doc.text(`Fecha: ${createdAt}`, 20, 70);
+    doc.text(`Cliente: ${selectedClient?.name}`, 20, 80);
+    doc.text(`NIF: ${selectedClient?.nif}`, 20, 90);
+    doc.text(`Dirección: ${selectedClient?.address}`, 20, 100);
+    doc.text(`Teléfono: ${selectedClient?.phone}`, 20, 110);
+
+    const tableData = services.map((service) => [service.description, `${parseFloat(service.amount || 0).toFixed(2)} €`]);
+    doc.autoTable({ startY: 120, head: [["Descripción", "Importe (€)"]], body: tableData, theme: "grid" });
+
+    let finalY = doc.lastAutoTable.finalY + 10;
+    doc.text(`Subtotal: ${totalAmount.toFixed(2)} €`, 180, finalY, { align: "right" });
+    doc.text(`IVA (21%): ${vat.toFixed(2)} €`, 180, finalY + 6, { align: "right" });
+    doc.text(`Total: ${total.toFixed(2)} €`, 180, finalY + 12, { align: "right" });
+
+    doc.save(`Factura_${invoiceNumber}.pdf`);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="bg-white p-6 rounded shadow-md">
+      <h2 className="text-2xl mb-4">Crear Factura</h2>
+      <select value={selectedClient?._id || ""} onChange={handleClientChange} className="border p-2 w-full">
+        <option value="">Selecciona cliente</option>
+        {clients.map((client) => (
+          <option key={client._id} value={client._id}>{client.name}</option>
+        ))}
+      </select>
+      <button type="submit" className="bg-blue-500 text-white p-2 mt-4">Crear Factura</button>
+      <button type="button" onClick={generatePDF} className="bg-green-500 text-white p-2 mt-4">Descargar PDF</button>
+    </form>
+  );
+};
+
+export default InvoiceForm; */
